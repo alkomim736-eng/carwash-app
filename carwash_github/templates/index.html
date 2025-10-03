@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>مغسلة السيارات</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        .app {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* التبويبات */
+        .tabs {
+            display: flex;
+            background: #2c3e50;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.3);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 0.75em;
+            transition: all 0.3s ease;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-top: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #3498db;
+            border-top-color: #3498db;
+        }
+
+        .tab i {
+            display: block;
+            font-size: 1.4em;
+            margin-bottom: 4px;
+        }
+
+        /* المحتوى */
+        .content {
+            flex: 1;
+            padding: 20px 15px 80px 15px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* الكاردات */
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        /* النماذج */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1.1em;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            transform: scale(1.02);
+        }
+
+        /* الأزرار */
+        .btn {
+            padding: 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            margin: 8px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* الكاميرا */
+        .camera-container {
+            background: black;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        #video {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-frame {
+            width: 250px;
+            height: 250px;
+            border: 4px solid #2ecc71;
+            border-radius: 20px;
+            background: rgba(46, 204, 113, 0.1);
+            box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+        }
+
+        /* قائمة العملاء */
+        .customer-list {
+            max-height: 65vh;
+            overflow-y: auto;
+        }
+
+        .customer-item {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #2ecc71;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .customer-item:active {
+            transform: scale(0.98);
+        }
+
+        .customer-item.expired {
+            border-left-color: #e74c3c;
+            opacity: 0.8;
+        }
+
+        .customer-name {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        .customer-details {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+
+        .customer-details div {
+            margin-bottom: 4px;
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9em;
+            flex: 1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* الرسائل */
+        .message {
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .message.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* التحميل */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* الهيدر */
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            margin: -20px -15px 25px -15px;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- المحتوى الرئيسي -->
+        <div class="content">
+            <!-- صفحة المسح -->
+            <div class="page active" id="scanPage">
+                <div class="header">
+                    <h1>🔍 مسح العميل</h1>
+                    <p>وجه الكاميرا نحو كود العميل</p>
+                </div>
+
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <div class="scan-overlay">
+                        <div class="scan-frame"></div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="startCamera()" id="startCameraBtn">
+                    📷 تشغيل الكاميرا
+                </button>
+
+                <button class="btn btn-success" onclick="captureQR()" id="scanBtn" disabled>
+                    🔍 مسح الكود
+                </button>
+
+                <div class="card">
+                    <div class="form-group">
+                        <label>أو أدخل الكود يدوياً:</label>
+                        <input type="text" id="manualCode" placeholder="مثال: customer_1">
+                        <button class="btn btn-warning" onclick="manualScan()" style="margin-top: 15px;">
+                            ⌨️ مسح يدوي
+                        </button>
+                    </div>
+                </div>
+
+                <div class="message" id="message"></div>
+                <div class="loading" id="loading"></div>
+
+                <div class="card" id="resultCard" style="display: none;">
+                    <div id="customerResult"></div>
+                </div>
+            </div>
+
+            <!-- صفحة العملاء -->
+            <div class="page" id="customersPage">
+                <div class="header">
+                    <h1>👥 العملاء</h1>
+                    <p>إدارة عملاء المغسلة</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="showAddCustomer()">
+                    ➕ إضافة عميل جديد
+                </button>
+
+                <div class="customer-list" id="customersList">
+                    <!-- سيتم ملؤها بالعملاء -->
+                </div>
+            </div>
+
+            <!-- صفحة الإضافة -->
+            <div class="page" id="addCustomerPage">
+                <div class="header">
+                    <h1>➕ عميل جديد</h1>
+                    <p>إضافة عميل جديد للنظام</p>
+                </div>
+
+                <div class="card">
+                    <form id="customerForm">
+                        <div class="form-group">
+                            <label>👤 اسم العميل:</label>
+                            <input type="text" id="customerName" required placeholder="أدخل الاسم الكامل">
+                        </div>
+
+                        <div class="form-group">
+                            <label>📞 رقم الهاتف:</label>
+                            <input type="text" id="customerPhone" required placeholder="أدخل رقم الهاتف">
+                        </div>
+
+                        <div class="form-group">
+                            <label>⏱️ مدة الاشتراك:</label>
+                            <select id="customerMonths" required>
+                                <option value="1">شهر واحد</option>
+                                <option value="3">3 أشهر</option>
+                                <option value="6">6 أشهر</option>
+                                <option value="12">سنة كاملة</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-success">
+                            ✅ إضافة العميل
+                        </button>
+                    </form>
+                </div>
+
+                <button class="btn btn-primary" onclick="showPage('customersPage')">
+                    ↩️ رجوع للعملاء
+                </button>
+            </div>
+        </div>
+
+        <!-- التبويبات السفلية -->
+        <div class="tabs">
+            <button class="tab active" onclick="showPage('scanPage')">
+                <span>🔍</span> مسح
+            </button>
+            <button class="tab" onclick="showPage('customersPage')">
+                <span>👥</span> عملاء
+            </button>
+            <button class="tab" onclick="showPage('addCustomerPage')">
+                <span>➕</span> إضافة
+            </button>
+        </div>
+    </div>
+
+    <!-- مكتبة QR -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <script>
+        // المتغيرات العامة
+        let videoStream = null;
+        let videoElement = null;
+        let canvas = null;
+        let ctx = null;
+
+        // تهيئة التطبيق
+        document.addEventListener('DOMContentLoaded', function() {
+            videoElement = document.getElementById('video');
+            canvas = document.createElement('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // تحميل العملاء
+            loadCustomers();
+            
+            // إضافة عميل جديد
+            document.getElementById('customerForm').addEventListener('submit', addCustomer);
+        });
+
+        // التنقل بين الصفحات
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (pageId === 'customersPage') {
+                loadCustomers();
+            }
+        }
+
+        function showAddCustomer() {
+            showPage('addCustomerPage');
+        }
+
+        // إدارة الكاميرا
+        async function startCamera() {
+            try {
+                showMessage('جاري تشغيل الكاميرا...', 'success');
+                
+                videoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                videoElement.srcObject = videoStream;
+                document.getElementById('scanBtn').disabled = false;
+                showMessage('✅ الكاميرا جاهزة للمسح', 'success');
+                
+            } catch (error) {
+                showMessage('❌ لا يمكن الوصول للكاميرا', 'error');
+            }
+        }
+
+        // مسح QR Code
+        function captureQR() {
+            if (!videoStream) {
+                showMessage('❌ يرجى تشغيل الكاميرا أولاً', 'error');
+                return;
+            }
+
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            
+            if (code) {
+                processScanResult(code.data);
+            } else {
+                showMessage('❌ لم يتم العثور على QR Code', 'error');
+            }
+        }
+
+        // المسح اليدوي
+        function manualScan() {
+            const code = document.getElementById('manualCode').value.trim();
+            if (!code) {
+                showMessage('❌ يرجى إدخال كود العميل', 'error');
+                return;
+            }
+            processScanResult(code);
+        }
+
+        // معالجة النتيجة
+        async function processScanResult(qrData) {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`/scan/${qrData}`);
+                const result = await response.json();
+                showLoading(false);
+                displayScanResult(result);
+            } catch (error) {
+                showLoading(false);
+                showMessage('❌ خطأ في الاتصال', 'error');
+            }
+        }
+
+        // عرض نتيجة المسح
+        function displayScanResult(result) {
+            const resultCard = document.getElementById('resultCard');
+            const customerResult = document.getElementById('customerResult');
+            
+            if (result.found) {
+                const statusText = result.active ? 'نشط' : 'منتهي';
+                const statusColor = result.active ? '#2ecc71' : '#e74c3c';
+                
+                customerResult.innerHTML = `
+                    <h3 style="color: ${statusColor}; margin-bottom: 20px; text-align: center;">
+                        ${result.active ? '✅' : '❌'} ${result.name}
+                    </h3>
+                    <div style="font-size: 1.1em;">
+                        <p><strong>📞 الهاتف:</strong> ${result.phone}</p>
+                        <p><strong>📅 البداية:</strong> ${new Date(result.start_date).toLocaleDateString('ar-SA')}</p>
+                        <p><strong>📅 النهاية:</strong> ${new Date(result.end_date).toLocaleDateString('ar-SA')}</p>
+                        <p><strong>🔄 الحالة:</strong> <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span></p>
+                    </div>
+                    <div style="margin-top: 25px;">
+                        <button class="btn btn-primary" onclick="closeResult()">تم</button>
+                    </div>
+                `;
+                
+                resultCard.style.display = 'block';
+                showMessage(result.message, 'success');
+            } else {
+                showMessage('❌ العميل غير موجود', 'error');
+            }
+        }
+
+        function closeResult() {
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('manualCode').value = '';
+        }
+
+        // إضافة عميل جديد
+        async function addCustomer(event) {
+            event.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('customerName').value,
+                phone: document.getElementById('customerPhone').value,
+                months: parseInt(document.getElementById('customerMonths').value)
+            };
+            
+            try {
+                const response = await fetch('/add_customer', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('✅ تم إضافة العميل بنجاح!', 'success');
+                    document.getElementById('customerForm').reset();
+                    showPage('customersPage');
+                } else {
+                    showMessage('❌ خطأ: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ خطأ في الاتصال', 'error');
+            }
+        }
+
+        // تحميل العملاء
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/customers');
+                const customers = await response.json();
+                const listDiv = document.getElementById('customersList');
+                
+                if (customers.length === 0) {
+                    listDiv.innerHTML = '<p style="text-align: center; padding: 30px; color: #7f8c8d; font-size: 1.1em;">لا يوجد عملاء مسجلين</p>';
+                    return;
+                }
+                
+                listDiv.innerHTML = customers.map(customer => `
+                    <div class="customer-item ${customer.is_active ? '' : 'expired'}">
+                        <div class="customer-name">${customer.name}</div>
+                        <div class="customer-details">
+                            <div>📞 ${customer.phone}</div>
+                            <div>🔢 ${customer.qr_code}</div>
+                            <div>📅 ينتهي في: ${new Date(customer.end_date).toLocaleDateString('ar-SA')}</div>
+                            <div><strong>${customer.is_active ? '✅ نشط' : '❌ منتهي'}</strong></div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn-small btn-primary" onclick="viewQRCode('${customer.id}')">🖼️ QR</button>
+                            <button class="btn-small btn-warning" onclick="testScan('${customer.qr_code}')">🔍 فحص</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('customersList').innerHTML = '<div class="message error">❌ خطأ في تحميل العملاء</div>';
+            }
+        }
+
+        // عرض QR Code
+        function viewQRCode(customerId) {
+            window.open(`/qrcode/${customerId}`, '_blank');
+        }
+
+        // فحص المسح
+        function testScan(qrCode) {
+            showPage('scanPage');
+            document.getElementById('manualCode').value = qrCode;
+            manualScan();
+        }
+
+        // الرسائل
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} active`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('active');
+            }, 4000);
+        }
+
+        // التحميل
+        function showLoading(show) {
+            const loadingEl = document.getElementById('loading');
+            loadingEl.innerHTML = show ? '<div class="spinner"></div><p>جاري المعالجة...</p>' : '';
+            loadingEl.classList.toggle('active', show);
+        }
+    </script>
+</body>
+</html>
